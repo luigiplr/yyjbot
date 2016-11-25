@@ -10,17 +10,18 @@ export function santitizeUser({ id, profile, name: handle }) {
   }
 }
 
-function santitizeMessage({ user, text, ts: timestamp, user_profile: userProfile = null }) {
+function santitizeMessage({ user, text, ts: timestamp, user_profile = null, channel: channel_or_dm_id }) {
   return omitBy({
     user,
     text,
-    userProfile,
+    user_profile,
     timestamp,
+    channel_or_dm_id,
     friendlyTimestamp: moment.unix(timestamp).format('h:mm a')
   }, isNil)
 }
 
-export function parseMessage({ type, subtype, team, channel, bot_id, ...messageData }, trigger) {
+export function parseMessage({ type, subtype, team, bot_id, ...messageData }) {
   if (Boolean(bot_id)) return null // we only care about humans.
 
   switch (subtype ? `${type}:${subtype}` : type) {
@@ -34,8 +35,8 @@ export function parseMessage({ type, subtype, team, channel, bot_id, ...messageD
             id
           }
         }
-        console.log(messageData)
-        const msg = omitBy(santitizeMessage.bind(this)(messageData), isNil)
+
+        const msg = omitBy(santitizeMessage(messageData), isNil)
         return msg
       }
     case 'message:message_changed':

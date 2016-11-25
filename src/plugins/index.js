@@ -9,17 +9,13 @@ function getPlugins() {
     const folderPath = path.join(__dirname, folder)
     if(fs.statSync(folderPath).isDirectory()) {
       try {
-        return { id, commands } = require(folderPath)
-        return plugins[id] = {
-          commands,
-          containsListener: some(commands, ['listener', true])
-        }
+        const { id, commands } = require(folderPath)
+        plugins[id] = commands
       } catch (err) {
-        return false
+        console.error(`Error loading plugin "${folderPath}"`, err)
       }
     }
-    return false
-  }).filter(Boolean)
+  })
 
   return plugins
 }

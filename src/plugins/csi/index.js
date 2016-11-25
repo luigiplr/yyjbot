@@ -1,14 +1,14 @@
 
 
-function csi() {
-  return Promise.resolve({ type: 'channel', message: _genMessage() })
+function csi(message, isListenerTriggered) {
+  this.message.send(message.channel_or_dm_id, _genMessage())
 }
 
 export default {
   id: 'csi',
   commands: [
     {
-      triggers: [/^csi/],
+      trigger: /^csi/,
       listener: false,
       command: csi,
       usage: 'csi',

@@ -7,7 +7,7 @@ export default class SlackAdaptor {
   constructor(teamSettings, plugins) {
     this._settings = teamSettings
     this._parseMessage = parseMessage.bind(this)
-    const { auth: { slack_token } } = teamSettings
+    const { auth: { slack_token }, command_prefix } = teamSettings
 
     this._slack = new RtmClient(slack_token, {
       logLevel: 'error',
@@ -53,10 +53,20 @@ export default class SlackAdaptor {
 
     this._slack.on(RTM_EVENTS.MESSAGE, message => {
       const parsedMessage = this._parseMessage(message)
-      plugins.listeners.forEach(methoid => )
-      if (parsedMessage) {
-        handleMessage(parsedMessage)
-      }
+      if (!parsedMessage) return
+      const textWithoutPrefix = parsedMessage.text.charAt(0) === command_prefix ? parsedMessage.text.substring(1) : null
+      // for every plugin
+      forEach(plugins, commands => {
+        // and every command within the plugin, should really optimize this later.
+        commands.forEach(({ trigger, listener, command }) => {
+          if (textWithoutPrefix && trigger && trigger.test(textWithoutPrefix)) {
+            command.bind(this)(parsedMessage, false)
+          }
+          if (listener) {
+            command.bind(this)(parsedMessage, true)
+          }
+        })
+      })
     })
 
     this._slack.start() // :rocket:
@@ -64,7 +74,8 @@ export default class SlackAdaptor {
 
   message = {
     send: this._sendMessage,
-    edit: this._editMessage
+    edit: this._editMessage,
+    reply: this._replyToMessage
   }
 
   _canSend = false
@@ -105,8 +116,21 @@ export default class SlackAdaptor {
   /* Start of message methods */
 
   @autobind
-  _sendMessage(channel_or_dm_id, { text }) {
-    return this._slack.sendMessage(text, channel_or_dm_id)
+  _replyToMessage({ channel_or_dm_id, user }, message) {
+    const { handle } = this._users[user]
+    if (typeof message === 'string') {
+      message = `(${handle}) ${message}`
+    } else {
+      message.text = `(${handle}) ${message.text}`
+    }
+    this._sendMessage(channel_or_dm_id, message)
+  }
+
+  @autobind
+  _sendMessage(channel_or_dm_id, message) {
+    if (typeof message === 'string') {
+      this._slack.sendMessage(message, channel_or_dm_id)
+    }
   }
 
   @autobind

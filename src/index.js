@@ -15,7 +15,6 @@ if (__DEVELOPMENT__) {
   console[method] = function() { oldMethod.apply(console, [`<${moment().format('YY-MM-DD HH:mm:ssSS')}>`, ...arguments]) }
 })
 
-
 teams.forEach(({ adapter, ...team }) => {
   const teamHandler = new adapters[adapter](team, plugins)
 })
