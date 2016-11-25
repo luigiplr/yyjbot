@@ -11,8 +11,7 @@ export default {
       trigger: /^csi/,
       listener: false,
       command: csi,
-      usage: 'csi',
-      info: 'Generates some PERFECTO CSI Cyber technobabble'
+      usage: 'csi - Generates some CSI Cyber technobabble'
     }
   ]
 }

@@ -60,7 +60,7 @@ export default class SlackAdaptor {
         // and every command within the plugin, should really optimize this later.
         commands.forEach(({ trigger, listener, command }) => {
           if (textWithoutPrefix && trigger && trigger.test(textWithoutPrefix)) {
-            command.bind(this)(parsedMessage, false)
+            command.bind(this)({ ...parsedMessage, text: textWithoutPrefix }, false)
           }
           if (listener) {
             command.bind(this)(parsedMessage, true)
