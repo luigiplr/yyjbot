@@ -1,0 +1,11 @@
+[
+  {
+    "adapter": "slack",
+    "command_prefix": ".",
+    "auth": {
+      "slack_token": "",
+      "github_token": "",
+      "wolfram_token": ""
+    }
+  }
+]
