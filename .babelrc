@@ -1,0 +1,11 @@
+{
+  "presets": ["node6", "stage-0"],
+  "plugins": [
+    "transform-flow-strip-types",
+    "transform-runtime",
+    "syntax-async-functions",
+    "transform-regenerator",
+    "add-module-exports",
+    "transform-decorators-legacy"
+  ]
+}
