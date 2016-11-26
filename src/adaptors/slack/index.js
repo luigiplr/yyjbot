@@ -61,6 +61,7 @@ export default class SlackAdaptor {
         commands.forEach(({ trigger, listener, command }) => {
           if (textWithoutPrefix && trigger && trigger.test(textWithoutPrefix)) {
             command.bind(this)({ ...parsedMessage, text: textWithoutPrefix }, false)
+            return
           }
           if (listener) {
             command.bind(this)(parsedMessage, true)
