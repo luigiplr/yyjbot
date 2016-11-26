@@ -6,7 +6,7 @@ import teams from '../teams.json'
 global.__DEVELOPMENT__ = process.env.NODE_ENV !== 'production'
 
 if (__DEVELOPMENT__) {
-  require('piping')({ hook: true })
+  require('piping')()
 }
 
 // Override default log function to add timestamps
