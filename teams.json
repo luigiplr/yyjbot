@@ -1,7 +1,7 @@
 [
   {
     "adapter": "slack",
-    "command_prefix": ".",
+    "command_prefix": ".asd",
     "auth": {
       "slack_token": "",
       "github_token": "",

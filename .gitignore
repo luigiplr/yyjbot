@@ -35,3 +35,9 @@ jspm_packages
 
 # Optional REPL history
 .node_repl_history
+
+# I put my auth token in here so i better not push it
+teams.json
+
+# My eslint
+.eslintrc
