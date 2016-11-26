@@ -5,7 +5,10 @@
     "auth": {
       "slack_token": "",
       "github_token": "",
-      "wolfram_token": ""
+      "google_api_token": "",
+      "google_cse_id": "",
+      "wolfram_token": "",
+      "giphy_token": ""
     }
   }
 ]

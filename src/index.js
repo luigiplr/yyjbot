@@ -15,6 +15,11 @@ if (__DEVELOPMENT__) {
   console[method] = function() { oldMethod.apply(console, [`<${moment().format('YY-MM-DD HH:mm:ssSS')}>`, ...arguments]) }
 })
 
+// tell me more.
+process.on('unhandledRejection', (err) => {
+  console.error(err)
+})
+
 teams.forEach(({ adapter, ...team }) => {
   const teamHandler = new adapters[adapter](team, plugins)
 })
