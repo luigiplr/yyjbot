@@ -55,12 +55,14 @@ export default class SlackAdaptor {
       const parsedMessage = this._parseMessage(message)
       if (!parsedMessage) return
       const textWithoutPrefix = parsedMessage.text.charAt(0) === command_prefix ? parsedMessage.text.substring(1) : null
+      const parsedText = textWithoutPrefix ? textWithoutPrefix.split(' ').slice(1).join(' ').trim() || undefined : undefined
+
       // for every plugin
       forEach(plugins, commands => {
         // and every command within the plugin, should really optimize this later.
         commands.forEach(({ trigger, listener, command }) => {
           if (textWithoutPrefix && trigger && trigger.test(textWithoutPrefix)) {
-            command.bind(this)({ ...parsedMessage, text: textWithoutPrefix }, false)
+            command.bind(this)({ ...parsedMessage, text: textWithoutPrefix, parsedText }, false)
             return
           }
           if (listener) {
@@ -75,6 +77,7 @@ export default class SlackAdaptor {
 
   message = {
     send: this._sendMessage,
+    sendCustom: this._sendCustomMessage,
     edit: this._editMessage,
     reply: this._replyToMessage
   }
@@ -132,6 +135,15 @@ export default class SlackAdaptor {
     if (typeof message === 'string') {
       this._slack.sendMessage(message, channel_or_dm_id)
     }
+  }
+
+  @autobind
+  _sendCustomMessage(channel_or_dm_id, message = '', attachments = [], opts = {}) {
+    const options = Object.assign({}, {
+      as_user: true,
+      attachments
+    }, opts)
+    this._slack._webClient.chat.postMessage(channel_or_dm_id, message, options)
   }
 
   @autobind
