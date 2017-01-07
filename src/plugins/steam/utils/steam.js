@@ -198,77 +198,74 @@ export default function Steam(token) {
       }).catch(reject))
     },
     generateProfileResponse: function(profile) {
-      if (profile) {
-        let realname = profile.realname ? `(${profile.realname})` : ''
-        let status = profile.gameextrainfo ? `In-Game ${profile.gameextrainfo} (${profile.gameid})` : getPersonaState(profile.personastate)
-        let out = [{
-          mrkdwn_in: ['text'],
-          author_name: profile.personaname,
-          author_icon: profile.avatar,
-          author_link: profile.profileurl,
-          text: [
-            `*Profile Name:* ${profile.personaname} ${realname}`,
-            `*Level:* ${profile.user_level} | *Status:* ${status}`,
-            `*Joined Steam:* ${profile.timecreated ? moment(profile.timecreated * 1000).format('dddd, Do MMM YYYY') : 'Unknown'}`,
-            `*Total Games:* ${profile.totalgames || 'Unknown'} | *Most Played:* ${profile.mostplayed.name || 'Unknown'} w/ ${formatPlaytime(profile.mostplayed.playtime_forever)}`,
-            profile.bans ? profile.bans.VACBanned ? `*This user has ${profile.bans.NumberOfVACBans} VAC ban/s on record!*` : null : null,
-            profile.communityvisibilitystate == 1 ? '*This is a private profile*' : null
-          ].filter(Boolean).join('\n')
-        }]
-        out[0].fallback = out[0].text.split('\n').join(' | ').replace(/\*/g, '')
-        return out
-      } else return 'Error fetching profile info'
+      if (!profile) return 'Error fetching profile info'
+      let realname = profile.realname ? `(${profile.realname})` : ''
+      let status = profile.gameextrainfo ? `In-Game ${profile.gameextrainfo} (${profile.gameid})` : getPersonaState(profile.personastate)
+      let out = [{
+        mrkdwn_in: ['text'],
+        author_name: profile.personaname,
+        author_icon: profile.avatar,
+        author_link: profile.profileurl,
+        "color": "#14578b",
+        text: [
+          `*Profile Name:* ${profile.personaname} ${realname}`,
+          `*Level:* ${profile.user_level} | *Status:* ${status}`,
+          `*Joined Steam:* ${profile.timecreated ? moment(profile.timecreated * 1000).format('dddd, Do MMM YYYY') : 'Unknown'}`,
+          `*Total Games:* ${profile.totalgames || 'Unknown'} | *Most Played:* ${profile.mostplayed.name || 'Unknown'} w/ ${formatPlaytime(profile.mostplayed.playtime_forever)}`,
+          profile.bans ? profile.bans.VACBanned ? `*This user has ${profile.bans.NumberOfVACBans} VAC ban/s on record!*` : null : null,
+          profile.communityvisibilitystate == 1 ? '*This is a private profile*' : null
+        ].filter(Boolean).join('\n')
+      }]
+      out[0].fallback = out[0].text.split('\n').join(' | ').replace(/\*/g, '')
+      return out
     },
     generateAppDetailsResponse: function(app, cc = 'US') {
-      if (app) {
-        let price = getPriceForApp(app)
-        let date = getDateForApp(app)
+      if (!app) return `Error: App: *${app.name}* _(${app.steam_appid})_ isn't a valid game`
+      let price = getPriceForApp(app)
+      let date = getDateForApp(app)
 
-        let out = {
-          attachments: [{
-            fallback: `${app.name} (${app.steam_appid}) | Cost: ${price} | Current Players: ${app.player_count ? formatNumber(app.player_count) : null}`,
-            image_url: app.header_image,
-            mrkdwn_in: ["text", "pretext", "fields"],
-            pretext: `*<http://store.steampowered.com/app/${app.steam_appid}|${app.name}>* _(${app.steam_appid})_ _(${cc.toUpperCase()})_`,
-            color: "#14578b"
-          }]
-        }
+      let out = [{
+        fallback: `${app.name} (${app.steam_appid}) | Cost: ${price} | Current Players: ${app.player_count ? formatNumber(app.player_count) : null}`,
+        image_url: app.header_image,
+        mrkdwn_in: ["text", "pretext", "fields"],
+        pretext: `*<http://store.steampowered.com/app/${app.steam_appid}|${app.name}>* _(${app.steam_appid})_ _(${cc.toUpperCase()})_`,
+        color: "#14578b"
+      }]
 
-        out.attachments[0].fields = filter([{
-          "title": "Cost",
-          "value": price || null,
-          "short": true
-        }, {
-          "title": app.release_date ? (app.release_date.coming_soon ? "Release Date" : "Released") : null,
-          "value": date || null,
-          "short": true
-        }, {
-          "title": "Type",
-          "value": capitalize(app.type),
-          "short": true
-        }, {
-          "title": "Genres",
-          "value": app.genres ? (app.genres.slice(0, 3).map(g => g.description).sort().join(', ')) : null,
-          "short": true
-        }, {
-          "title": "Current Players",
-          "value": app.player_count ? formatNumber(app.player_count) : null,
-          "short": true
-        }, {
-          "title": 'Developers',
-          "value": app.developers ? (truncate(app.developers.join(', '), { length: 45 })) : null,
-          "short": true
-        }, {
-          "title": "Metacritic",
-          "value": (app.metacritic && app.metacritic.score) ? app.metacritic.score : null,
-          "short": true
-        }, {
-          "title": "Demo",
-          "value": app.demos ? 'Demos available' : null,
-          "short": true
-        }], 'value')
-        return out
-      } else return `Error: App: *${app.name}* _(${app.steam_appid})_ isn't a valid game`
+      out[0].fields = filter([{
+        "title": "Cost",
+        "value": price || null,
+        "short": true
+      }, {
+        "title": app.release_date ? (app.release_date.coming_soon ? "Release Date" : "Released") : null,
+        "value": date || null,
+        "short": true
+      }, {
+        "title": "Type",
+        "value": capitalize(app.type),
+        "short": true
+      }, {
+        "title": "Genres",
+        "value": app.genres ? (app.genres.slice(0, 3).map(g => g.description).sort().join(', ')) : null,
+        "short": true
+      }, {
+        "title": "Current Players",
+        "value": app.player_count ? formatNumber(app.player_count) : null,
+        "short": true
+      }, {
+        "title": 'Developers',
+        "value": app.developers ? (truncate(app.developers.join(', '), { length: 45 })) : null,
+        "short": true
+      }, {
+        "title": "Metacritic",
+        "value": (app.metacritic && app.metacritic.score) ? app.metacritic.score : null,
+        "short": true
+      }, {
+        "title": "Demo",
+        "value": app.demos ? 'Demos available' : null,
+        "short": true
+      }], 'value')
+      return out
     },
     generatePlayersResponse: function(app) {
       return `There are currently *${formatNumber(app.player_count)}* people playing _${app.name}_ right now`

@@ -62,7 +62,7 @@ function game(message) {
   Steam().getAppInfo(input, cc).then(data => {
     let response = Steam().generateAppDetailsResponse(data, cc)
     if (typeof response === 'string') this.message.reply(message, response)
-    else this.message.sendCustom(message.channel_or_dm_id, response.msg, response.attachments)
+    else this.message.sendCustom(message.channel_or_dm_id, null, response)
   }).catch(err => this.message.reply(message, err))
 }
 
