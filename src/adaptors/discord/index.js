@@ -62,10 +62,23 @@ export default class DiscordAdapter {
       })
     })
 
+    this._discord.on('channelUpdate', (oldChannel, { id, name }) => {
+      this._channels[id].name = name
+    })
+
+    this._discord.on('channelCreate', ({ id, name, type }) => {
+      this._channels[id] = { id, name, type: type == 'text' ? 'channel' : type == 'dm' ? 'dm' : type }
+    })
+
+    this._discord.on('guildMemberAdd', () => {
+      const { users } = this._loadUsers()
+      Object.assign(this, { _users: users })
+    })
+
     this._discord.login(discord_token) // :rocket:
   }
 
-  getChannelByID = id => this._discord.channels.get(id)
+  getChannelByID = id => this._discord.channels.get(id) // Returns a Channel Instance
 
   message = {
     send: this._sendMessage,
