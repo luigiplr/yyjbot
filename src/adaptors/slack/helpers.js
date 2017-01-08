@@ -1,5 +1,4 @@
-import { filter, get, last, omitBy, isNil } from 'lodash'
-import path from 'path'
+import { get, omitBy, isNil } from 'lodash'
 import moment from 'moment'
 
 export function santitizeUser({ id, profile, name: handle }) {
@@ -21,8 +20,8 @@ function santitizeMessage({ user, text, ts: timestamp, user_profile = null, chan
   }, isNil)
 }
 
-export function parseMessage({ type, subtype, team, bot_id, ...messageData }) {
-  if (Boolean(bot_id)) return null // we only care about humans.
+export function parseMessage({ type, subtype, bot_id, ...messageData }) {
+  if (bot_id) return null // we only care about humans.
 
   switch (subtype ? `${type}:${subtype}` : type) {
     case 'message':
@@ -39,8 +38,7 @@ export function parseMessage({ type, subtype, team, bot_id, ...messageData }) {
         const msg = omitBy(santitizeMessage(messageData), isNil)
         return msg
       }
-    case 'message:message_changed':
-      // user edited a message logic for now just pass through to default:
+    case 'message:message_changed': // user edited a message logic for now just pass through to default:
     default:
       return null
   }
