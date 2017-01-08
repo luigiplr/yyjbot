@@ -46,7 +46,6 @@ export default class DiscordAdapter {
       if (!parsedMessage) return
       const textWithoutPrefix = parsedMessage.text.charAt(0) === command_prefix ? parsedMessage.text.substring(1) : null
       const parsedText = textWithoutPrefix ? textWithoutPrefix.split(' ').slice(1).join(' ').trim() || undefined : undefined
-      console.log(parsedMessage)
 
       // for every plugin
       forEach(plugins, commands => {
@@ -66,80 +65,73 @@ export default class DiscordAdapter {
     this._discord.login(discord_token) // :rocket:
   }
 
+  getChannelByID = id => this._discord.channels.get(id)
 
-    message = {
-      send: this._sendMessage,
-      sendCustom: this._sendCustomMessage,
-      edit: this._editMessage,
-      reply: this._replyToMessage
-    }
+  message = {
+    send: this._sendMessage,
+    sendCustom: this._sendCustomMessage,
+    edit: this._editMessage,
+    reply: this._replyToMessage
+  }
 
-    _canSend = false
-    _connected = false
+  _canSend = false
+  _connected = false
 
-    /* Start of load methods */
+  /* Start of load methods */
 
-    _loadChannles() {
-      const channels = {}
-      forEach(this._discord.channels.array(), ({ name, id, type, recipient = {} }) => {
-        if (type == 'voice') return // lets not keep track of voice channels shall we?
-        channels[id] = ({
-          name: type == 'dm' ? `#${recipient.username || "Unknown"}` : name,
-          type: type == 'text' ? 'channel' : type == 'dm' ? 'dm' : type,
-          id
-        })
+  _loadChannles() {
+    const channels = {}
+    forEach(this._discord.channels.array(), ({ name, id, type, recipient = {} }) => {
+      if (type == 'voice') return // lets not keep track of voice channels shall we?
+      channels[id] = ({
+        name: type == 'dm' ? `#${recipient.username || "Unknown"}` : name,
+        type: type == 'text' ? 'channel' : type == 'dm' ? 'dm' : type,
+        id
       })
-      return channels
+    })
+    return channels
+  }
+
+  _loadUsers() {
+    const { user: { id: activeUserId }, users } = this._discord
+    const newUsers = {}
+    forEach(users.array(), user => {
+      newUsers[user.id] = santitizeUser(user)
+    })
+    return { users: newUsers, user: newUsers[activeUserId] }
+  }
+
+  _loadTeam() {
+    return pick(this._discord.guilds.array()[0], ['name', 'id'])
+  }
+
+  /* End of load methods */
+
+  /* Start of message methods */
+
+  @autobind
+  _replyToMessage({ channel_or_dm_id, user }, message) {
+    const { handle } = this._users[user]
+    message = `(${handle}) ${message}`
+    this._discord.rest.methods.sendMessage(this.getChannelByID(channel_or_dm_id), message)
+  }
+
+  @autobind
+  _sendMessage(channel_or_dm_id, message) {
+    if (typeof message === 'string') {
+      this._discord.rest.methods.sendMessage(this.getChannelByID(channel_or_dm_id), message)
     }
+  }
 
-    _loadUsers() {
-      const { user: { id: activeUserId }, users } = this._discord
-      const newUsers = {}
-      forEach(users.array(), user => {
-        newUsers[user.id] = santitizeUser(user)
-      })
-      return { users: newUsers, user: newUsers[activeUserId] }
-    }
+  @autobind
+  _sendCustomMessage(channel_or_dm_id, message = '', attachments = []) {
+    this._discord.rest.methods.sendMessage(this.getChannelByID(channel_or_dm_id), [message, attachments.map(a => a.fallback || 'NO FALLBACK DEFINED')])
+  }
 
-    _loadTeam() {
-      return pick(this._discord.guilds.array()[0], ['name', 'id'])
-    }
+  @autobind
+  _editMessage() {
 
-    /* End of load methods */
+  }
 
-    /* Start of message methods */
-
-    @autobind
-    _replyToMessage({ channel_or_dm_id, user }, message) {
-      const { handle } = this._users[user]
-      if (typeof message === 'string') {
-        message = `(${handle}) ${message}`
-      } else {
-        message.text = `(${handle}) ${message.text}`
-      }
-      this._sendMessage(channel_or_dm_id, message)
-    }
-
-    @autobind
-    _sendMessage(channel_or_dm_id, message) {
-      if (typeof message === 'string') {
-        this._slack.sendMessage(message, channel_or_dm_id)
-      }
-    }
-
-    @autobind
-    _sendCustomMessage(channel_or_dm_id, message = '', attachments = [], opts = {}) {
-      const options = Object.assign({}, {
-        as_user: true,
-        attachments
-      }, opts)
-      this._slack._webClient.chat.postMessage(channel_or_dm_id, message, options)
-    }
-
-    @autobind
-    _editMessage() {
-
-    }
-
-    /* End of mmessage Methods */
+  /* End of mmessage Methods */
 }
